@@ -81,8 +81,9 @@ class MCPClient:
         try:
             if not self.tools:
                 return "Error: No tools available. Please check server connection."
-                
-            print(f"Available tools: {self.tools}")
+            
+            #full dedug mode to see mcp server tools    
+            #print(f"Available tools: {self.tools}")
             
             config = types.GenerateContentConfig(tools=[self.tools])
             
@@ -91,7 +92,9 @@ class MCPClient:
                 contents=query,
                 config=config,
             )
-            print(f"Response received: {response}")
+            
+            #full dedug mode to see response from agent   
+            #print(f"Response received: {response}")
 
             # Check for function call in response
             if not hasattr(response, 'candidates') or not response.candidates:
@@ -118,17 +121,24 @@ class MCPClient:
             
             if not tool_name:
                 return "No tool name specified in function call"
-                
-            print(f"Attempting to call tool: {tool_name} with args: {tool_args}")
+             
+            #full dedug mode to see tool name and args   
+            #print(f"Attempting to call tool: {tool_name} with args: {tool_args}")
             
             # Call the tool
             result = await self.session.call_tool(tool_name, tool_args)
-            return f"Tool {tool_name} called with args {tool_args}\nResult: {result}"
+            
+            # Extract and return just the weather information text
+            if hasattr(result, 'content') and isinstance(result.content, list):
+                for content in result.content:
+                    if hasattr(content, 'text'):
+                        return content.text
+            
+            # Fallback to string representation if content structure is different
+            return str(result)
 
         except Exception as e:
-            import traceback
-            error_details = traceback.format_exc()
-            return f"Error processing query: {str(e)}\n\nDebug info:\n{error_details}"
+            return f"An error occurred: {str(e)}"
 
     async def chat_loop(self):
         """Run an interactive chat loop"""
@@ -142,7 +152,7 @@ class MCPClient:
                     break
 
                 response = await self.process_query(query)
-                print("\nResponse:", response)
+                print("\nResponse:\n", response)
 
             except Exception as e:
                 print(f"\nError: {str(e)}")

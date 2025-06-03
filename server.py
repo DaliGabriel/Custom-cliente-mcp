@@ -33,4 +33,7 @@ async def get_weather(latitude: float, longitude: float) -> str:
 
 
 if __name__ == "__main__":
+    print("Starting MCP Weather Server...")
+    print("Server is now running. Press Ctrl+C to stop.")
+    print("-" * 50)
     mcp.run(transport='stdio')
